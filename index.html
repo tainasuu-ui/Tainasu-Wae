@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalenderku</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+.container {
+  width: min(1100px, 94%);
+  margin: 25px auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 10px;
+}
+
+.header h1 {
+  font-size: 28px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary {
+  background: #2563eb;
+  color: white;
+}
+
+.secondary {
+  background: white;
+  border: 1px solid #ddd;
+}
+
+.calendar-box {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.07);
+}
+
+.calendar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.calendar-top h2 {
+  font-size: 22px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.weekdays div {
+  text-align: center;
+  font-weight: bold;
+  color: #666;
+  padding: 8px 0;
+}
+
+.day {
+  min-height: 90px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  background: white;
+  transition: .15s;
+}
+
+.day:hover {
+  background: #f5f8ff;
+}
+
+.day.other-month {
+  color: #aaa;
+  background: #fafafa;
+}
+
+.day.today {
+  border: 2px solid #2563eb;
+}
+
+.day-number {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.event {
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  margin-top: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.search {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+}
+
+.upcoming {
+  margin-top: 20px;
+  background: white;
+  padding: 18px;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.07);
+}
+
+.upcoming h2 {
+  margin-bottom: 12px;
+}
+
+.agenda {
+  border-left: 5px solid #2563eb;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.agenda strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.agenda small {
+  color: #666;
+}
+
+.agenda-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 7px;
+}
+
+.edit-btn {
+  background: #f59e0b;
+  color: white;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  z-index: 100;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  width: min(500px, 100%);
+  padding: 22px;
+  border-radius: 18px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 13px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.empty {
+  color: #777;
+  text-align: center;
+  padding: 15px;
+}
+
+@media (max-width: 700px) {
+  .container {
+    width: 96%;
+    margin: 12px auto;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 23px;
+  }
+
+  .day {
+    min-height: 65px;
+    padding: 5px;
+  }
+
+  .weekdays {
+    font-size: 12px;
+  }
+
+  .day-number {
+    font-size: 13px;
+  }
+
+  .event {
+    font-size: 10px;
+    padding: 3px;
+  }
+
+  .calendar-box {
+    padding: 10px;
+  }
+
+  .calendar-top h2 {
+    font-size: 17px;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .primary {
+    width: 100%;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .modal-buttons button {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>📅 Kalenderku</h1>
+    <button class="primary" onclick="openAddModal()">+ Tambah Agenda</button>
+  </div>
+
+  <div class="controls">
+    <input
+      id="searchInput"
+      class="search"
+      type="text"
+      placeholder="🔎 Cari agenda..."
+      oninput="renderUpcoming()"
+    >
+
+    <button class="secondary" onclick="goToday()">Hari Ini</button>
+  </div>
+
+  <div class="calendar-box">
+
+    <div class="calendar-top">
+      <h2 id="monthTitle"></h2>
+
+      <div class="nav-buttons">
+        <button class="secondary" onclick="previousMonth()">‹</button>
+        <button class="secondary" onclick="nextMonth()">›</button>
+      </div>
+    </div>
+
+    <div class="weekdays">
+      <div>Min</div>
+      <div>Sen</div>
+      <div>Sel</div>
+      <div>Rab</div>
+      <div>Kam</div>
+      <div>Jum</div>
+      <div>Sab</div>
+    </div>
+
+    <div id="days" class="days"></div>
+
+  </div>
+
+  <div class="upcoming">
+    <h2>📌 Agenda</h2>
+    <div id="upcomingList"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+
+  <div class="modal-content">
+
+    <h2 id="modalTitle">Tambah Agenda</h2>
+
+    <div class="form-group">
+      <label>Judul Agenda</label>
+      <input id="eventTitle" type="text" placeholder="Contoh: Rapat OSIM">
+    </div>
+
+    <div class="form-group">
+      <label>Tanggal</label>
+      <input id="eventDate" type="date">
+    </div>
+
+    <div class="form-group">
+      <label>Waktu</label>
+      <input id="eventTime" type="time">
+    </div>
+
+    <div class="form-group">
+      <label>Catatan</label>
+      <textarea id="eventNote" placeholder="Tambahkan catatan..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Warna</label>
+      <select id="eventColor">
+        <option value="#2563eb">Biru</option>
+        <option value="#16a34a">Hijau</option>
+        <option value="#f59e0b">Kuning</option>
+        <option value="#dc2626">Merah</option>
+        <option value="#9333ea">Ungu</option>
+        <option value="#0891b2">Cyan</option>
+      </select>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="secondary" onclick="closeModal()">Batal</button>
+      <button class="primary" onclick="saveEvent()">Simpan</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const monthNames = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember"
+];
+
+let currentDate = new Date();
+let editingId = null;
+
+let events = JSON.parse(
+  localStorage.getItem("kalenderku-v1") || "[]"
+);
+
+function saveToStorage() {
+  localStorage.setItem(
+    "kalenderku-v1",
+    JSON.stringify(events)
+  );
+}
+
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`;
+}
+
+function renderCalendar() {
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  document.getElementById("monthTitle").textContent =
+    `${monthNames[month]} ${year}`;
+
+  const daysContainer =
+    document.getElementById("days");
+
+  daysContainer.innerHTML = "";
+
+  const firstDay =
+    new Date(year, month, 1).getDay();
+
+  const daysInMonth =
+    new Date(year, month + 1, 0).getDate();
+
+  const previousDays =
+    new Date(year, month, 0).getDate();
+
+  const totalCells =
+    Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  const today = new Date();
+  const todayString = formatDate(today);
+
+  for (let i = 0; i < totalCells; i++) {
+
+    let dayNumber;
+    let cellDate;
+    let otherMonth = false;
+
+    if (i < firstDay) {
+
+      dayNumber =
+        previousDays - firstDay + i + 1;
+
+      cellDate =
+        new Date(year, month - 1, dayNumber);
+
+      otherMonth = true;
+
+    } else if (i >= firstDay + daysInMonth) {
+
+      dayNumber =
+        i - firstDay - daysInMonth + 1;
+
+      cellDate =
+        new Date(year, month + 1, dayNumber);
+
+      otherMonth = true;
+
+    } else {
+
+      dayNumber =
+        i - firstDay + 1;
+
+      cellDate =
+        new Date(year, month, dayNumber);
+    }
+
+    const dateString =
+      formatDate(cellDate);
+
+    const dayElement =
+      document.createElement("div");
+
+    dayElement.className =
+      "day" +
+      (otherMonth ? " other-month" : "") +
+      (dateString === todayString ? " today" : "");
+
+    dayElement.onclick = () =>
+      openAddModal(dateString);
+
+    const numberElement =
+      document.createElement("div");
+
+    numberElement.className = "day-number";
+    numberElement.textContent = dayNumber;
+
+    dayElement.appendChild(numberElement);
+
+    const dayEvents =
+      events
+      .filter(event => event.date === dateString)
+      .sort((a,b) =>
+        (a.time || "").localeCompare(b.time || "")
+      );
+
+    dayEvents.forEach(event => {
+
+      const eventElement =
+        document.createElement("div");
+
+      eventElement.className = "event";
+
+      eventElement.style.background =
+        event.color || "#2563eb";
+
+      eventElement.style.color = "white";
+
+      eventElement.textContent =
+        (event.time ? event.time + " " : "") +
+        event.title;
+
+      eventElement.onclick = (e) => {
+        e.stopPropagation();
+        openEditModal(event.id);
+      };
+
+      dayElement.appendChild(eventElement);
+
+    });
+
+    daysContainer.appendChild(dayElement);
+  }
+
+  renderUpcoming();
+}
+
+function renderUpcoming() {
+
+  const list =
+    document.getElementById("upcomingList");
+
+  const search =
+    document.getElementById("searchInput")
+      .value
+      .toLowerCase();
+
+  const today =
+    formatDate(new Date());
+
+  let filtered =
+    events
+    .filter(event => event.date >= today)
+    .filter(event =>
+      event.title.toLowerCase().includes(search) ||
+      (event.note || "").toLowerCase().includes(search)
+    )
+    .sort((a,b) => {
+
+      const first =
+        `${a.date} ${a.time || ""}`;
+
+      const second =
+        `${b.date} ${b.time || ""}`;
+
+      return first.localeCompare(second);
+    });
+
+  list.innerHTML = "";
+
+  if (filtered.length === 0) {
+
+    list.innerHTML =
+      `<div class="empty">Belum ada agenda.</div>`;
+
+    return;
+  }
+
+  filtered.forEach(event => {
+
+    const item =
+      document.createElement("div");
+
+    item.className = "agenda";
+
+    item.style.borderLeftColor =
+      event.color || "#2563eb";
+
+    const dateObject =
+      new Date(event.date + "T00:00:00");
+
+    const formattedDate =
+      dateObject.toLocaleDateString(
+        "id-ID",
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }
+      );
+
+    item.innerHTML = `
+      <strong>${escapeHtml(event.title)}</strong>
+      <small>
+        📅 ${formattedDate}
+        ${event.time ? " • ⏰ " + event.time : ""}
+      </small>
+      ${
+        event.note
+        ? `<p style="margin-top:7px">${escapeHtml(event.note)}</p>`
+        : ""
+      }
+
+      <div class="agenda-actions">
+        <button
+          class="edit-btn"
+          onclick="openEditModal('${event.id}')">
+          Edit
+        </button>
+
+        <button
+          class="delete-btn"
+          onclick="deleteEvent('${event.id}')">
+          Hapus
+        </button>
+      </div>
+    `;
+
+    list.appendChild(item);
+  });
+}
+
+function escapeHtml(text) {
+
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function openAddModal(date = null) {
+
+  editingId = null;
+
+  document.getElementById("modalTitle").textContent =
+    "Tambah Agenda";
+
+  document.getElementById("eventTitle").value = "";
+  document.getElementById("eventDate").value =
+    date || formatDate(new Date());
+  document.getElementById("eventTime").value = "";
+  document.getElementById("eventNote").value = "";
+  document.getElementById("eventColor").value =
+    "#2563eb";
+
+  document.getElementById("modal")
+    .classList.add("active");
+}
+
+function openEditModal(id) {
+
+  const event =
+    events.find(item => item.id === id);
+
+  if (!event) return;
+
+  editingId = id;
+
+  document.getElementById("modalTitle").textContent =
+    "Edit Agenda";
+
+  document.getElementById("eventTitle").value =
+    event.title;
+
+  document.getElementById("eventDate").value =
+    event.date;
+
+  document.getElementById("eventTime").value =
+    event.time || "";
+
+  document.getElementById("eventNote").value =
+    event.note || "";
+
+  document.getElementById("eventColor").value =
+    event.color || "#2563eb";
+
+  document.getElementById("modal")
+    .classList.add("active");
+}
+
+function closeModal() {
+
+  document.getElementById("modal")
+    .classList.remove("active");
+}
+
+function saveEvent() {
+
+  const title =
+    document.getElementById("eventTitle")
+      .value
+      .trim();
+
+  const date =
+    document.getElementById("eventDate").value;
+
+  const time =
+    document.getElementById("eventTime").value;
+
+  const note =
+    document.getElementById("eventNote")
+      .value
+      .trim();
+
+  const color =
+    document.getElementById("eventColor").value;
+
+  if (!title) {
+    alert("Judul agenda belum diisi.");
+    return;
+  }
+
+  if (!date) {
+    alert("Tanggal belum dipilih.");
+    return;
+  }
+
+  if (editingId) {
+
+    const index =
+      events.findIndex(
+        event => event.id === editingId
+      );
+
+    if (index !== -1) {
+
+      events[index] = {
+        ...events[index],
+        title,
+        date,
+        time,
+        note,
+        color
+      };
+    }
+
+  } else {
+
+    events.push({
+
+      id:
+        Date.now().toString(),
+
+      title,
+      date,
+      time,
+      note,
+      color
+
+    });
+  }
+
+  saveToStorage();
+  closeModal();
+  renderCalendar();
+}
+
+function deleteEvent(id) {
+
+  const event =
+    events.find(item => item.id === id);
+
+  if (!event) return;
+
+  const confirmDelete =
+    confirm(
+      `Hapus agenda "${event.title}"?`
+    );
+
+  if (!confirmDelete) return;
+
+  events =
+    events.filter(
+      item => item.id !== id
+    );
+
+  saveToStorage();
+  renderCalendar();
+}
+
+function previousMonth() {
+
+  currentDate.setMonth(
+    currentDate.getMonth() - 1
+  );
+
+  renderCalendar();
+}
+
+function nextMonth() {
+
+  currentDate.setMonth(
+    currentDate.getMonth() + 1
+  );
+
+  renderCalendar();
+}
+
+function goToday() {
+
+  currentDate = new Date();
+
+  renderCalendar();
+}
+
+document.getElementById("modal")
+  .addEventListener("click", function(e) {
+
+    if (e.target === this) {
+      closeModal();
+    }
+
+  });
+
+renderCalendar();
+
+</script>
+
+</body>
+</html>
